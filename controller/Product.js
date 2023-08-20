@@ -4,12 +4,13 @@ exports.createProduct = async (req, res) => {
   //this is our action function using 'Product' schemaModel to create its instance
   //   console.log(req, "BODY");
   const product = new Product(req.body); //instance created using mongoose model 'Product'
-  //   console.log(product, "Product");
+  // console.log(product, "Product");
   try {
     const doc = await product.save(); //saving instance to DB
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json(err);
+    // console.log(err, "Not OKKKKKKKKKKK");
   }
 };
 
@@ -27,6 +28,7 @@ exports.fetchAllProductsQuery = async (req, res) => {
   // NOTE: in 'get' requst we get 'query' parms, unlike POST-we get req.body
 
   //check _sort & _order present in url query
+  //TODO: sorting by discounted price not orignal
   if (req.query._sort && req.query._order) {
     // appending mongo sorting query , here 'sort'  method is mongoose built in
     query = query.sort({ [req.query._sort]: req.query._order });
@@ -55,6 +57,30 @@ exports.fetchAllProductsQuery = async (req, res) => {
     const doc = await query.exec(); //query model from DB
     res.set("X-Total-Count", totalCount);
     res.status(200).json(doc);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+};
+
+exports.fetchProductById = async (req, res) => {
+  const { id } = req.params;
+  // console.log(id);
+  const product = await Product.findById(id);
+  // console.log(product);
+  try {
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const product = await Product.findByIdAndUpdate(id, req.body, { new: true });
+  // console.log(product);
+  try {
+    // const doc = await product.save(); //saving instance to DB
+    res.status(201).json(product);
   } catch (err) {
     res.status(400).json(err);
   }

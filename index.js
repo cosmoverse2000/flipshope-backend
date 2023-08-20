@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const server = express();
 
 const productRouters = require("./routes/Products");
@@ -6,7 +7,13 @@ const categoryRouters = require("./routes/Categories");
 const brandRouters = require("./routes/Brands");
 
 //middlware
+server.use(
+  cors({
+    exposedHeaders: ["X-Total-Count"],
+  })
+);
 server.use(express.json()); //to parse req.body
+//routes
 server.use("/products", productRouters.router);
 server.use("/categories", categoryRouters.router);
 server.use("/brands", brandRouters.router);
