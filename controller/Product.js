@@ -49,7 +49,7 @@ exports.fetchAllProductsQuery = async (req, res) => {
   }
 
   const totalCount = await totalCountQuery.count({}).exec();
-  console.log(totalCount);
+  // console.log(totalCount);
 
   try {
     const doc = await query.exec(); //query model from DB
