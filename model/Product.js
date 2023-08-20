@@ -18,9 +18,9 @@ const productSchema = new Schema({
   },
   rating: {
     type: Number,
-    min: [0, "wrong min rating"],
+    min: [1, "wrong min rating"],
     max: [5, "wrong max rating"],
-    default: 0,
+    default: 1,
   },
   stock: { type: Number, min: [0, "wrong min stock"], default: 1 },
   brand: { type: String, required: true },
