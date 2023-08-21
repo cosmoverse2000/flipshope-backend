@@ -1,5 +1,6 @@
 const { Product } = require("../model/Product");
 
+//create ptoduct
 exports.createProduct = async (req, res) => {
   //this is our action function using 'Product' schemaModel to create its instance
   //   console.log(req, "BODY");
@@ -14,6 +15,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+//get ptoduct list with fetch,sort, page
 exports.fetchAllProductsQuery = async (req, res) => {
   //'filter' obj format ={"category":["smartphone","laptops"],"brand":['samsung','adad']}
   //'Sort' obj format ={_sort:"ratings",_order="asc"}
@@ -62,18 +64,20 @@ exports.fetchAllProductsQuery = async (req, res) => {
   }
 };
 
+// get product detail by id
 exports.fetchProductById = async (req, res) => {
   const { id } = req.params;
   // console.log(id);
-  const product = await Product.findById(id);
   // console.log(product);
   try {
+    const product = await Product.findById(id).exec();
     res.status(200).json(product);
   } catch (error) {
     res.status(400).json(error);
   }
 };
 
+// edit product by admin
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const product = await Product.findByIdAndUpdate(id, req.body, { new: true });

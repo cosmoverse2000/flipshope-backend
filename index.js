@@ -5,6 +5,8 @@ const server = express();
 const productRouters = require("./routes/Products");
 const categoryRouters = require("./routes/Categories");
 const brandRouters = require("./routes/Brands");
+const userRouters = require("./routes/User");
+const authRouters = require("./routes/Auth");
 
 //middlware
 server.use(
@@ -17,6 +19,8 @@ server.use(express.json()); //to parse req.body
 server.use("/products", productRouters.router);
 server.use("/categories", categoryRouters.router);
 server.use("/brands", brandRouters.router);
+server.use("/user", userRouters.router);
+server.use("/auth", authRouters.router);
 
 const mongoose = require("mongoose");
 
