@@ -5,8 +5,9 @@ const server = express();
 const productRouters = require("./routes/Products");
 const categoryRouters = require("./routes/Categories");
 const brandRouters = require("./routes/Brands");
-const userRouters = require("./routes/User");
+const userRouters = require("./routes/Users");
 const authRouters = require("./routes/Auth");
+const cartRouters = require("./routes/Carts");
 
 //middlware
 server.use(
@@ -21,6 +22,7 @@ server.use("/categories", categoryRouters.router);
 server.use("/brands", brandRouters.router);
 server.use("/user", userRouters.router);
 server.use("/auth", authRouters.router);
+server.use("/cart", cartRouters.router);
 
 const mongoose = require("mongoose");
 

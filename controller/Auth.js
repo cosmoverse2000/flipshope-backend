@@ -25,7 +25,8 @@ exports.loginUserAccount = async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        addresses: user.addresses,
+        addresses: user.addresses, //TODO: will make addresse independent of auth
+        // ,since  its a user profile
         role: user.role,
       });
     } else {

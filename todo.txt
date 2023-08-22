@@ -1,0 +1,3 @@
+ToDo: create cartTems, address, orders inside user model only
+toDo: open home page without login
+store user pass encrtp

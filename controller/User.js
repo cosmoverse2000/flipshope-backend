@@ -6,7 +6,10 @@ exports.fetchUserProfile = async (req, res) => {
   // console.log(id);
   // console.log(product);
   try {
-    const user = await User.findById(userId, "name email id").exec();
+    const user = await User.findById(
+      userId,
+      "name email id addresses orders role"
+    ).exec();
     res.status(200).json(user);
   } catch (error) {
     res.status(400).json(error);
