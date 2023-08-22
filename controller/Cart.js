@@ -7,10 +7,11 @@ exports.addItemsToCart = async (req, res) => {
   try {
     const doc = await cart.save(); //saving instance to DB
     // console.log(doc, "add ite");
-    const cartItem = await Cart.findById(doc._id)
-      .populate("userId", "id")
-      .populate("productId", "title discountPercentage brand price thumbnail")
-      .exec();
+    const cartItem = await doc.populate(
+      "productId",
+      "title discountPercentage brand price thumbnail"
+    );
+
     // console.log(cartItems, "add ite");
     res.status(201).json(cartItem);
   } catch (err) {
