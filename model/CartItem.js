@@ -1,18 +1,18 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const cartSchema = new Schema({
+const cartItemSchema = new Schema({
   qty: { type: Number, required: true },
-  productId: { type: Schema.Types.ObjectId, ref: "Product" },
-  userId: { type: Schema.Types.ObjectId, ref: "User" },
+  product: { type: Schema.Types.ObjectId, ref: "Product" },
+  user: { type: Schema.Types.ObjectId, ref: "User" },
 });
 
 //vitualization of _id to id
-const virtual = cartSchema.virtual("id");
+const virtual = cartItemSchema.virtual("id");
 virtual.get(function () {
   return this._id;
 });
-cartSchema.set("toJSON", {
+cartItemSchema.set("toJSON", {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
@@ -21,4 +21,4 @@ cartSchema.set("toJSON", {
 });
 
 //this is our cart model for mongo
-exports.Cart = mongoose.model("Cart", cartSchema);
+exports.CartItem = mongoose.model("CartItem", cartItemSchema);

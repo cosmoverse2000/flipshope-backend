@@ -7,7 +7,7 @@ const categoryRouters = require("./routes/Categories");
 const brandRouters = require("./routes/Brands");
 const userRouters = require("./routes/Users");
 const authRouters = require("./routes/Auth");
-const cartRouters = require("./routes/Carts");
+const cartItemRouters = require("./routes/CartsItems");
 
 //middlware
 server.use(
@@ -22,7 +22,7 @@ server.use("/categories", categoryRouters.router);
 server.use("/brands", brandRouters.router);
 server.use("/user", userRouters.router);
 server.use("/auth", authRouters.router);
-server.use("/cart", cartRouters.router);
+server.use("/cart", cartItemRouters.router);
 
 const mongoose = require("mongoose");
 
