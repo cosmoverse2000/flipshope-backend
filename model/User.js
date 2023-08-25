@@ -7,7 +7,6 @@ const userSchema = new Schema({
   role: { type: String, required: true, default: "user" },
   name: { type: String },
   addresses: { type: [Schema.Types.Mixed] },
-  orders: { type: [Schema.Types.Mixed] },
 });
 
 //vitualization of _id to id

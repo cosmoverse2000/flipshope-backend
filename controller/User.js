@@ -8,7 +8,7 @@ exports.fetchUserProfile = async (req, res) => {
   try {
     const user = await User.findById(
       userId,
-      "name email id addresses orders role"
+      "name email id addresses role"
     ).exec();
     res.status(200).json(user);
   } catch (error) {
