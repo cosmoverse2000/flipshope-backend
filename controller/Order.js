@@ -18,16 +18,14 @@ exports.addToOrders = async (req, res) => {
   }
 };
 
-// get User Cart detail by id
-exports.fetchCartByUserId = async (req, res) => {
+// get User orders list detail by id
+exports.fetchUserOrders = async (req, res) => {
   const { userId } = req.query;
 
   try {
-    const cartItems = await Order.find({ user: userId })
-      .populate("product", "title discountPercentage brand price thumbnail")
-      .exec();
+    const userOrders = await Order.find({ user: userId });
 
-    res.status(200).json(cartItems);
+    res.status(200).json(userOrders);
   } catch (error) {
     res.status(400).json(error);
   }

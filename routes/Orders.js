@@ -1,11 +1,11 @@
 const express = require("express");
-const { addToOrders } = require("../controller/Order");
+const { addToOrders, fetchUserOrders } = require("../controller/Order");
 
 const router = express.Router();
 
 router
   .post("/", addToOrders)
-  .get("/", addToOrders)
+  .get("/", fetchUserOrders)
   .patch("/:cartItemId", addToOrders)
   .delete("/:cartItemId", addToOrders);
 
