@@ -23,8 +23,14 @@ exports.fetchAllProductsQuery = async (req, res) => {
   // TODO: to support multiple categories
 
   //this 'query' will just store 'find query(in mongo lang)' for 'Product' Model
-  let query = Product.find({ isDeleted: { $ne: true } });
-  let totalCountQuery = Product.find({ isDeleted: { $ne: true } });
+  let query, totalCountQuery;
+  if (req.query.role === "admin") {
+    query = Product.find();
+    totalCountQuery = Product.find();
+  } else {
+    query = Product.find({ isDeleted: { $ne: true } });
+    totalCountQuery = Product.find({ isDeleted: { $ne: true } });
+  }
 
   // appending another queries, if there is query parms in url like sort,page,etc
   // NOTE: in 'get' requst we get 'query' parms, unlike POST-we get req.body
