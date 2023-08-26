@@ -10,6 +10,9 @@ exports.fetchUserProfile = async (req, res) => {
       userId,
       "name email id addresses role"
     ).exec();
+
+    //TODO: will make addresse independent of auth/users
+    //     ,since  its a user profile
     res.status(200).json(user);
   } catch (error) {
     res.status(400).json(error);

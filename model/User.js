@@ -7,6 +7,7 @@ const userSchema = new Schema({
   role: { type: String, required: true, default: "user" },
   name: { type: String },
   addresses: { type: [Schema.Types.Mixed] },
+  //profile imge url as - 'imageUrl'
 });
 
 //vitualization of _id to id

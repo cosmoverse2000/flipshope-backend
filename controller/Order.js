@@ -31,36 +31,68 @@ exports.fetchUserOrders = async (req, res) => {
   }
 };
 
-// update cart Item
-exports.updateCartItem = async (req, res) => {
-  const { cartItemId } = req.params;
+//get all orders list with for ADMIN only,sort, page
+exports.fetchAllOrders = async (req, res) => {
+  //this 'query' will just store 'find query(in mongo lang)' for 'Order' Model
+  let query = Order.find({ isDeleted: { $ne: true } });
+  let totalCountQuery = Order.find({ isDeleted: { $ne: true } });
 
-  const updatedCartItem = await Order.findByIdAndUpdate(
-    cartItemId,
-    { qty: +req.body.qty },
-    {
-      new: true,
-    }
-  )
-    .populate("product", "title discountPercentage brand price thumbnail")
-    .exec();
+  // appending another queries, if there is query parms in url like sort,page,etc
+  // NOTE: in 'get' requst we get 'query' parms, unlike POST-we get req.body
+
+  //check _sort & _order present in url query
+  //TODO: sorting by discounted price not orignal
+  if (req.query._sort && req.query._order) {
+    // appending mongo sorting query , here 'sort'  method is mongoose built in
+    query = query.sort({ [req.query._sort]: req.query._order });
+    totalCountQuery = totalCountQuery.sort({
+      [req.query._sort]: req.query._order,
+    });
+  }
+  if (req.query._page && req.query._limit) {
+    const pageSize = req.query._limit;
+    const page = req.query._page;
+    query = query.skip(pageSize * (page - 1)).limit(pageSize);
+  }
+
+  const totalCount = await totalCountQuery.count({}).exec();
+  // console.log(totalCount);
 
   try {
-    res.status(201).json(updatedCartItem);
+    const doc = await query.exec(); //query model from DB
+    res.set("X-Total-Count", totalCount);
+    res.status(200).json(doc);
   } catch (err) {
     res.status(400).json(err);
   }
 };
 
-// // delete cart Item
-exports.deleteCartItem = async (req, res) => {
-  const { cartItemId } = req.params;
-  const deletedCartItem = await Order.findByIdAndDelete(cartItemId)
-    .populate("product", "title discountPercentage brand price thumbnail")
-    .exec();
+// update order Item BY admin Only
+exports.updateOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  const updatedOrder = await Order.findByIdAndUpdate(
+    orderId,
+    { orderStatus: req.body.orderStatus },
+    {
+      new: true,
+    }
+  ).exec();
 
   try {
-    res.status(201).json(deletedCartItem);
+    res.status(201).json(updatedOrder);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+};
+
+// // delete order Item
+exports.deleteOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(orderId).exec();
+    res.status(201).json(deletedOrder);
   } catch (err) {
     res.status(400).json(err);
   }

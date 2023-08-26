@@ -5,8 +5,11 @@ exports.signupUserAccount = async (req, res) => {
   const user = new User(req.body); //instance created using mongoose model 'User'
 
   try {
-    const doc = await user.save(); //saving instance to DB
-    res.status(201).json(doc);
+    const newUser = await user.save(); //saving instance to DB
+    res.status(201).json({
+      id: newUser.id,
+      role: newUser.role,
+    });
   } catch (err) {
     res.status(400).json(err);
     // console.log(err, "Not OKKKKKKKKKKK");
@@ -23,10 +26,6 @@ exports.loginUserAccount = async (req, res) => {
       ///TODO: this woud be encrypted
       res.status(201).json({
         id: user.id,
-        email: user.email,
-        name: user.name,
-        addresses: user.addresses, //TODO: will make addresse independent of auth
-        // ,since  its a user profile
         role: user.role,
       });
     } else {
