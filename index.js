@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 const cors = require("cors");
 const server = express();
 //passport
@@ -26,13 +27,25 @@ passport.use(
       const user = await User.findOne({ email: username }).exec();
 
       if (!user) {
-        done(null, false, { message: "• User Not found !" });
-      } else if (password === user.password) {
-        ///TODO: this woud be encrypted
-        done(null, user); //this line initiates serialization on LOGIN
-      } else {
-        done(null, false, { message: "• Invalid Credentials !" });
+        return done(null, false, { message: "• User Not found !" }); //todo:safety
       }
+      crypto.pbkdf2(
+        password,
+        user.salt,
+        310000,
+        32,
+        "sha256",
+        function (err, hashedPassword) {
+          if (err) {
+            return done(err);
+          }
+
+          if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
+            return done(null, false, { message: "• Invalid Credentials !" });
+          }
+          return done(null, user); //this line initiates serialization on LOGIN
+        }
+      );
     } catch (err) {
       done(err);
       // console.log(err, "Not OKKKKKKKKKKK");
@@ -88,7 +101,7 @@ server.use("/order", orderRouters.router);
 //mongoose connect mongodb local
 const main = async () => {
   await mongoose.connect("mongodb://127.0.0.1:27017/flipshopeDB");
-  console.log("connection-established");
+  console.log("mongo-connected");
 };
 main().catch((err) => {
   console.log(err, "mongo connection err");
