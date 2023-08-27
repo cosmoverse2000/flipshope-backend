@@ -2,6 +2,9 @@ const { User } = require("../model/User");
 const crypto = require("crypto");
 const { sanitizeUser } = require("../services/common");
 
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = "SECRET";
+
 //create User
 exports.signupUserAccount = async (req, res) => {
   try {
@@ -22,13 +25,13 @@ exports.signupUserAccount = async (req, res) => {
         //THIS REQ.LOGIN Part is totally binded to passport nothing we creatde
         //passport gives us login func, that takes user details and
         // DO SERIALIZATION to create user SESSION
-        //since serialization only use sanitized user data no need to send whole user data
-        // just as below, we are sending sanitized user
         req.login(sanitizeUser(newUser), function (err) {
+          // this function will internally do passport-login as a login route would have done
           if (err) {
             res.status(400).json(err);
           }
-          res.status(201).json(sanitizeUser(newUser));
+          const token = jwt.sign(sanitizeUser(newUser), SECRET_KEY);
+          res.status(201).json(token); // this line will do serialization
         });
       }
     );
