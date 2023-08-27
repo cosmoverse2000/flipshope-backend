@@ -43,7 +43,9 @@ passport.use(
           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
             return done(null, false, { message: "• Invalid Credentials !" });
           }
-          return done(null, user); //this line initiates serialization on LOGIN
+          //since serialization only use sanitized user data no need to send whole user data
+          // just as below, we are sending sanitized user
+          return done(null, sanitizeUser(user)); //this line initiates serialization on LOGIN
         }
       );
     } catch (err) {
@@ -55,25 +57,18 @@ passport.use(
 
 //serialize user to create session
 passport.serializeUser(function (user, cb) {
+  //note: this 'user' arg is alredy sanitized bt for safety we do it again ,in 'cb' below
   process.nextTick(function () {
-    cb(null, { id: user.id, role: user.role });
+    cb(null, sanitizeUser(user)); //sfty: sanitize
   });
 });
 
 //deserialize to check user exist is in backednd with that session
 passport.deserializeUser(function (user, cb) {
   process.nextTick(function () {
-    return cb(null, { id: user.id, role: user.role });
+    return cb(null, sanitizeUser(user));
   });
 });
-//HELPER FUNCTION
-const isAuthorized = (req, res, done) => {
-  if (req.user) {
-    done();
-  } else {
-    res.send(401);
-  }
-};
 
 //routers imports
 const productRouters = require("./routes/Products");
@@ -84,6 +79,7 @@ const authRouters = require("./routes/Auth");
 const cartItemRouters = require("./routes/CartsItems");
 const orderRouters = require("./routes/Orders");
 const { User } = require("./model/User");
+const { isAuthorized, sanitizeUser } = require("./services/common");
 //routes
 //isAutorized- here is router Middleware to protect routes
 // is Authorized - here is same as protected in Frontend it will prevent routes to work
@@ -107,7 +103,7 @@ main().catch((err) => {
   console.log(err, "mongo connection err");
 });
 
-//homepage get
+//homepage get -forTESTING ONLY
 server.get("/", (req, res) => {
   res.json({ status: "success" });
 });
