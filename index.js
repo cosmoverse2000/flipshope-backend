@@ -77,6 +77,7 @@ const { User } = require("./model/User");
 // is user not found that is authentication/login falied
 //these routes will not work until authrized
 server.use("/products", isAuthorized, productRouters.router);
+// we can use JWT middlware aslo insteda of isAuthorized
 server.use("/categories", categoryRouters.router);
 server.use("/brands", brandRouters.router);
 server.use("/user", userRouters.router);
