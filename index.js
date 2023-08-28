@@ -9,7 +9,6 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
 const cookieParser = require("cookie-parser");
 //routers imports
 const productRouters = require("./routes/Products");
@@ -92,6 +91,7 @@ passport.use(
             return done(null, false, { message: "• Invalid Credentials !" });
           }
           const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
+          //passed token here as object, so tobe saved as req.user.token in session
           return done(null, { token });
           //• this return line initiates serialization on LOGIN verified AND
           //• this will aslo create session simltaneously,

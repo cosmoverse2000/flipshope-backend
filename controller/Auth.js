@@ -38,7 +38,7 @@ exports.signupUserAccount = async (req, res) => {
               httpOnly: true,
             })
             .status(201)
-            .json(token);
+            .json(token); //TODO: no need to send token as res
         });
       }
     );
@@ -58,7 +58,7 @@ exports.loginUserAccount = async (req, res) => {
       httpOnly: true,
     })
     .status(201)
-    .json(req.user.token);
+    .json(req.user.token); //TODO: no need to send token as res
 };
 //Check Serialized User due to session created by firstlogin
 exports.checkUserAccount = async (req, res) => {
