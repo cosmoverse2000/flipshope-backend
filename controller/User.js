@@ -2,7 +2,7 @@ const { User } = require("../model/User");
 
 // get user profile by id
 exports.fetchUserProfile = async (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.user.id;
   // console.log(id);
   // console.log(product);
   try {
