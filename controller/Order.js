@@ -20,7 +20,7 @@ exports.addToOrders = async (req, res) => {
 
 // get User orders list detail by id
 exports.fetchUserOrders = async (req, res) => {
-  const { userId } = req.query;
+  const userId = req.user.id;
 
   try {
     const userOrders = await Order.find({ user: userId });

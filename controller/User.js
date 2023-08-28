@@ -2,9 +2,8 @@ const { User } = require("../model/User");
 
 // get user profile by id
 exports.fetchUserProfile = async (req, res) => {
-  const { userId } = req.user.id;
-  // console.log(id);
-  // console.log(product);
+  const userId = req.user.id;
+
   try {
     const user = await User.findById(
       userId,

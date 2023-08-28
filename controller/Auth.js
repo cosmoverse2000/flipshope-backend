@@ -31,7 +31,14 @@ exports.signupUserAccount = async (req, res) => {
             res.status(400).json(err);
           }
           const token = jwt.sign(sanitizeUser(newUser), SECRET_KEY);
-          res.status(201).json(token); // this line will do serialization
+          // sending token as res cookie (you can see in res header- 'set-cookie') af signup su
+          res
+            .cookie("jwt", token, {
+              expires: new Date(Date.now() + 36000000),
+              httpOnly: true,
+            })
+            .status(201)
+            .json(token);
         });
       }
     );
@@ -43,7 +50,15 @@ exports.signupUserAccount = async (req, res) => {
 
 //login User
 exports.loginUserAccount = async (req, res) => {
-  res.json(req.user);
+  // sending token as res cookie (you can see in res header- 'set-cookie') af signup su
+
+  res
+    .cookie("jwt", req.user.token, {
+      expires: new Date(Date.now() + 36000000),
+      httpOnly: true,
+    })
+    .status(201)
+    .json(req.user.token);
 };
 //Check Serialized User due to session created by firstlogin
 exports.checkUserAccount = async (req, res) => {

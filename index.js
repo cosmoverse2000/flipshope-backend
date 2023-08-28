@@ -10,6 +10,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
+const cookieParser = require("cookie-parser");
 //routers imports
 const productRouters = require("./routes/Products");
 const categoryRouters = require("./routes/Categories");
@@ -18,19 +19,24 @@ const userRouters = require("./routes/Users");
 const authRouters = require("./routes/Auth");
 const cartItemRouters = require("./routes/CartsItems");
 const orderRouters = require("./routes/Orders");
-
 //
 const { User } = require("./model/User");
-const { isAuthorizedJWT, sanitizeUser } = require("./services/common");
+const {
+  isAuthorizedJWT,
+  sanitizeUser,
+  cookieExtractor,
+} = require("./services/common");
 
 //pass-jwt Opts & JWT-tocken setup
 const SECRET_KEY = "SECRET";
 const opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),to extract token from bearer tkn
+  jwtFromRequest: cookieExtractor, // to extract from cookie recieved
   secretOrKey: SECRET_KEY,
 };
 
 //middlwares
+server.use(cookieParser());
 server.use(
   session({ secret: "keyboard cat", resave: true, saveUninitialized: true })
 );
@@ -41,6 +47,20 @@ server.use(
   })
 );
 server.use(express.json()); //to parse req.body
+
+//routes
+//isAutorized- here is router Middleware to protect routes
+// is Authorized - here is same as protected in Frontend it will prevent routes to work
+// is user not found that is authentication/login falied
+//these routes will not work until authrized
+server.use("/products", isAuthorizedJWT(), productRouters.router);
+// we can use JWT middlware aslo insteda of isAuthorized
+server.use("/categories", isAuthorizedJWT(), categoryRouters.router);
+server.use("/brands", isAuthorizedJWT(), brandRouters.router);
+server.use("/user", isAuthorizedJWT(), userRouters.router);
+server.use("/auth", authRouters.router);
+server.use("/cart", isAuthorizedJWT(), cartItemRouters.router);
+server.use("/order", isAuthorizedJWT(), orderRouters.router);
 
 //
 //Passport - Local Strategy and JWT
@@ -72,7 +92,7 @@ passport.use(
             return done(null, false, { message: "• Invalid Credentials !" });
           }
           const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
-          return done(null, token);
+          return done(null, { token });
           //• this return line initiates serialization on LOGIN verified AND
           //• this will aslo create session simltaneously,
           //which will set as '{user:token}' in session body, avalable to whole backend
@@ -130,20 +150,6 @@ passport.deserializeUser(function (token, cb) {
     //FORMAT-> cb(null,this_thing_will_setted_as_'user:' in session body);
   });
 });
-
-//routes
-//isAutorized- here is router Middleware to protect routes
-// is Authorized - here is same as protected in Frontend it will prevent routes to work
-// is user not found that is authentication/login falied
-//these routes will not work until authrized
-server.use("/products", isAuthorizedJWT(), productRouters.router);
-// we can use JWT middlware aslo insteda of isAuthorized
-server.use("/categories", isAuthorizedJWT(), categoryRouters.router);
-server.use("/brands", isAuthorizedJWT(), brandRouters.router);
-server.use("/user", isAuthorizedJWT(), userRouters.router);
-server.use("/auth", authRouters.router);
-server.use("/cart", isAuthorizedJWT(), cartItemRouters.router);
-server.use("/order", isAuthorizedJWT(), orderRouters.router);
 
 //mongoose connect mongodb local
 const main = async () => {

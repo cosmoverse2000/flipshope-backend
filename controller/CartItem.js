@@ -2,7 +2,7 @@ const { CartItem } = require("../model/CartItem");
 
 //add a cartItem
 exports.addItemToCart = async (req, res) => {
-  const { userId } = req.user.id;
+  const userId = req.user.id;
   const cartItem = new CartItem({ ...req.body, user: userId }); //instance created using mongoose model 'Product'
 
   try {
@@ -21,7 +21,7 @@ exports.addItemToCart = async (req, res) => {
 
 // get User Cart detail by id
 exports.fetchCartByUserId = async (req, res) => {
-  const { userId } = req.user.id;
+  const userId = req.user.id;
 
   try {
     const cartItems = await CartItem.find({ user: userId })
