@@ -7,7 +7,7 @@ exports.fetchUserProfile = async (req, res) => {
   try {
     const user = await User.findById(
       userId,
-      "name email id addresses role"
+      "name email addresses role"
     ).exec();
 
     //TODO: will make addresse independent of auth/users
@@ -20,11 +20,16 @@ exports.fetchUserProfile = async (req, res) => {
 
 // edit user by user
 exports.updateUserProfile = async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user.id;
   const user = await User.findByIdAndUpdate(userId, req.body, { new: true });
   // console.log(product);
   try {
-    res.status(201).json(user);
+    res.status(201).json({
+      name: user.name,
+      email: user.email,
+      addresses: user.addresses,
+      role: user.role,
+    });
   } catch (err) {
     res.status(400).json(err);
   }

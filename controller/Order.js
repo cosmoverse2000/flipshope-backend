@@ -2,7 +2,8 @@ const { Order } = require("../model/Order");
 
 //add a Order
 exports.addToOrders = async (req, res) => {
-  const order = new Order(req.body); //instance created using mongoose model 'Order'
+  const userId = req.user.id;
+  const order = new Order({ ...req.body, user: userId });
 
   try {
     const doc = await order.save(); //saving instance to DB

@@ -121,7 +121,7 @@ passport.use(
       const user = await User.findOne({ _id: jwt_payload.id });
       if (user) {
         return done(null, sanitizeUser(user));
-        //this will do serializaton attach user to session
+        //this will do serializaton attach 'user'sinec we send user not token to session
       } else {
         return done(null, false);
       }
@@ -132,9 +132,9 @@ passport.use(
 );
 
 //serialize user to create session
-passport.serializeUser(function (token, cb) {
+passport.serializeUser(function (user, cb) {
   process.nextTick(function () {
-    return cb(null, token);
+    return cb(null, user);
     //FORMAT-> cb(null,this_Thing_will_passed_as_arg_to_deserializer_when_called);,
     // NOTE:it will not set 'user': insession
     // this cb decides what to be 'serialized' not what to be stored in sesseion user
@@ -144,9 +144,9 @@ passport.serializeUser(function (token, cb) {
 
 //deserialize to check user exist is in backednd with that session
 //this will run on all request comming to backend(express-session) independet of any thing
-passport.deserializeUser(function (token, cb) {
+passport.deserializeUser(function (user, cb) {
   process.nextTick(function () {
-    return cb(null, token);
+    return cb(null, user);
     //FORMAT-> cb(null,this_thing_will_setted_as_'user:' in session body);
   });
 });
@@ -169,3 +169,19 @@ server.get("/", (req, res) => {
 server.listen(8080, () => {
   console.log("server started");
 });
+
+//NOTES:
+// after login/signup and checkup serialization by this cb function done
+// done(null, OBJECT_TO_BE_SAVED_AS_USER_IN_BAK_SESSION ) we save user in session
+// to maintain similarity in code we will save
+// In bak session after sucesfull login/signp
+// req.user = {
+//     token: token_genetared_while_login/signup using SanitzezUser & secretKey
+// }
+// but in case of isAuthorized on in routes 'jwt' staegy will put this as req.user in sess
+// req.user = {
+//     id : "22867627827sdbsjhdg"
+//     role: "role"
+// } = {satitizedUser(user)}
+// so that while accesing all other routes, we have 'userId' in session to run all api's
+// except 'auth'
