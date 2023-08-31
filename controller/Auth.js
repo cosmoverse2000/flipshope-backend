@@ -1,9 +1,9 @@
 const { User } = require("../model/User");
 const crypto = require("crypto");
 const { sanitizeUser } = require("../services/common");
+require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "SECRET";
 
 //create User
 exports.signupUserAccount = async (req, res) => {
@@ -23,7 +23,10 @@ exports.signupUserAccount = async (req, res) => {
         const newUser = await user.save(); //saving instance to DB
 
         //creating token using sanitize user detail and secretKey
-        const token = jwt.sign(sanitizeUser(newUser), SECRET_KEY);
+        const token = jwt.sign(
+          sanitizeUser(newUser),
+          process.env.JWT_SECRET_KEY
+        );
 
         //THIS REQ.LOGIN Part is totally binded to passport nothing we creatde
         //passport gives us login func, that takes token and

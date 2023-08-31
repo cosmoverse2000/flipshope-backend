@@ -29,17 +29,21 @@ const {
 } = require("./services/common");
 
 //pass-jwt Opts & JWT-tocken setup
-const SECRET_KEY = "SECRET";
+
 const opts = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),to extract token from bearer tkn
   jwtFromRequest: cookieExtractor, // to extract from cookie recieved
-  secretOrKey: SECRET_KEY,
+  secretOrKey: process.env.JWT_SECRET_KEY,
 };
 
 //middlwares
 server.use(cookieParser());
 server.use(
-  session({ secret: "keyboard cat", resave: true, saveUninitialized: true })
+  session({
+    secret: process.env.SESSION_SECRET_KEY,
+    resave: true,
+    saveUninitialized: true,
+  })
 );
 server.use(passport.authenticate("session"));
 server.use(
@@ -47,6 +51,8 @@ server.use(
     exposedHeaders: ["X-Total-Count"],
   })
 );
+server.use(express.raw({ type: "application/json" }));
+//to user raw data, remeber this must be above express.json always to be work
 server.use(express.json()); //to parse req.body
 server.use(express.static("public"));
 
@@ -93,7 +99,10 @@ passport.use(
           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
             return done(null, false, { message: "• Invalid Credentials !" });
           }
-          const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
+          const token = jwt.sign(
+            sanitizeUser(user),
+            process.env.JWT_SECRET_KEY
+          );
           //passed token here as object, so tobe saved as req.user.token in session
           return done(null, { token });
           //• this return line initiates serialization on LOGIN verified AND
@@ -156,21 +165,14 @@ passport.deserializeUser(function (user, cb) {
 
 //STRIPE START
 // This is your test secret API key.
-const stripe = require("stripe")(process.env.STRIPE_KEY);
-
-const calculateOrderAmount = (items) => {
-  // Replace this constant with a calculation of the order's amount
-  // Calculate the order total on the server to prevent
-  // people from directly manipulating the amount on the client
-  return 1400; //this is 14 Rs.
-};
+const stripe = require("stripe")(process.env.STRIPE_SERVER_KEY);
 
 server.post("/create-payment-intent", async (req, res) => {
-  const { items } = req.body;
+  const { totalPrice } = req.body;
 
   // Create a PaymentIntent with the order amount and currency
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
+    amount: totalPrice * 100,
     currency: "inr",
     // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
     automatic_payment_methods: {
@@ -183,11 +185,49 @@ server.post("/create-payment-intent", async (req, res) => {
   });
 });
 
+// This is your Stripe CLI webhook secret for testing your endpoint locally.
+const endpointSecret = process.env.STRIPE_END_POINT;
+//TODO: we will capture actute order on our live server end point as paymentIntentSuceed
+server.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (request, response) => {
+    const sig = request.headers["stripe-signature"];
+    // console.log(sig, "sig");
+    // console.log(request.body, "body");
+    let event;
+
+    try {
+      // console.log("tried");
+      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    } catch (err) {
+      console.log(err.message, "error");
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntentSucceeded = event.data.object;
+        console.log(paymentIntentSucceeded);
+        // Then define and call a function to handle the event payment_intent.succeeded
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    response.send();
+  }
+);
+
 //STRIPE END
 
 //mongoose connect mongodb local
 const main = async () => {
-  await mongoose.connect("mongodb://127.0.0.1:27017/flipshopeDB");
+  await mongoose.connect(process.env.MONGO_URL);
   console.log("mongo-connected");
 };
 main().catch((err) => {
@@ -200,7 +240,7 @@ server.get("/", (req, res) => {
 });
 
 //port defination
-server.listen(8080, () => {
+server.listen(process.env.PORT, () => {
   console.log("server started");
 });
 
