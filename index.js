@@ -4,6 +4,8 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const server = express();
+//DOTENV
+require("dotenv").config();
 //passport, local, jwt
 const session = require("express-session");
 const passport = require("passport");
@@ -46,14 +48,15 @@ server.use(
   })
 );
 server.use(express.json()); //to parse req.body
+server.use(express.static("public"));
 
 //routes
 //isAutorized- here is router Middleware to protect routes
 // is Authorized - here is same as protected in Frontend it will prevent routes to work
 // is user not found that is authentication/login falied
 //these routes will not work until authrized
-server.use("/products", isAuthorizedJWT(), productRouters.router);
 // we can use JWT middlware aslo insteda of isAuthorized
+server.use("/products", isAuthorizedJWT(), productRouters.router);
 server.use("/categories", isAuthorizedJWT(), categoryRouters.router);
 server.use("/brands", isAuthorizedJWT(), brandRouters.router);
 server.use("/user", isAuthorizedJWT(), userRouters.router);
@@ -150,6 +153,37 @@ passport.deserializeUser(function (user, cb) {
     //FORMAT-> cb(null,this_thing_will_setted_as_'user:' in session body);
   });
 });
+
+//STRIPE START
+// This is your test secret API key.
+const stripe = require("stripe")(process.env.STRIPE_KEY);
+
+const calculateOrderAmount = (items) => {
+  // Replace this constant with a calculation of the order's amount
+  // Calculate the order total on the server to prevent
+  // people from directly manipulating the amount on the client
+  return 1400; //this is 14 Rs.
+};
+
+server.post("/create-payment-intent", async (req, res) => {
+  const { items } = req.body;
+
+  // Create a PaymentIntent with the order amount and currency
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: calculateOrderAmount(items),
+    currency: "inr",
+    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+//STRIPE END
 
 //mongoose connect mongodb local
 const main = async () => {
