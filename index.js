@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const path = require("path");
 const server = express();
 //DOTENV
 require("dotenv").config();
@@ -76,6 +77,7 @@ const opts = {
 };
 
 //middlwares
+server.use(express.static(path.resolve(__dirname, "build")));
 server.use(cookieParser());
 server.use(
   session({
@@ -92,7 +94,6 @@ server.use(
 );
 
 server.use(express.json()); //to parse req.body
-server.use(express.static("public"));
 
 //routes
 //isAutorized- here is router Middleware to protect routes
@@ -235,9 +236,9 @@ main().catch((err) => {
 });
 
 //homepage get -forTESTING ONLY
-server.get("/", (req, res) => {
-  res.json({ status: "success" });
-});
+// server.get("/", (req, res) => {
+//   res.json({ status: "success" });
+// });
 
 //port defination
 server.listen(process.env.PORT, () => {
