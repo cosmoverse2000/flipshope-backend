@@ -28,8 +28,47 @@ const {
   cookieExtractor,
 } = require("./services/common");
 
-//pass-jwt Opts & JWT-tocken setup
+//STRIPE WEBHHOOK START--------------------------------------------------------------
+// This is your Stripe CLI webhook secret for testing your endpoint locally.
+const endpointSecret = process.env.STRIPE_END_POINT;
+//TODO: we will capture actute order on our live server end point as paymentIntentSuceed
+server.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (request, response) => {
+    const sig = request.headers["stripe-signature"];
+    // console.log(sig, "sig");
+    // console.log(request.body, "body");
+    let event;
 
+    try {
+      // console.log("tried");
+      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    } catch (err) {
+      console.log(err.message, "error");
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntentSucceeded = event.data.object;
+        console.log(paymentIntentSucceeded);
+        // Then define and call a function to handle the event payment_intent.succeeded
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    response.send();
+  }
+);
+//STRIPE WEBHHOOK END-------------------------------------------------------------
+
+//pass-jwt Opts & JWT-tocken setup
 const opts = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),to extract token from bearer tkn
   jwtFromRequest: cookieExtractor, // to extract from cookie recieved
@@ -51,8 +90,7 @@ server.use(
     exposedHeaders: ["X-Total-Count"],
   })
 );
-server.use(express.raw({ type: "application/json" }));
-//to user raw data, remeber this must be above express.json always to be work
+
 server.use(express.json()); //to parse req.body
 server.use(express.static("public"));
 
@@ -184,44 +222,6 @@ server.post("/create-payment-intent", async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
-
-// This is your Stripe CLI webhook secret for testing your endpoint locally.
-const endpointSecret = process.env.STRIPE_END_POINT;
-//TODO: we will capture actute order on our live server end point as paymentIntentSuceed
-server.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  (request, response) => {
-    const sig = request.headers["stripe-signature"];
-    // console.log(sig, "sig");
-    // console.log(request.body, "body");
-    let event;
-
-    try {
-      // console.log("tried");
-      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    } catch (err) {
-      console.log(err.message, "error");
-      response.status(400).send(`Webhook Error: ${err.message}`);
-      return;
-    }
-
-    // Handle the event
-    switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntentSucceeded = event.data.object;
-        console.log(paymentIntentSucceeded);
-        // Then define and call a function to handle the event payment_intent.succeeded
-        break;
-      // ... handle other event types
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-
-    // Return a 200 response to acknowledge receipt of the event
-    response.send();
-  }
-);
 
 //STRIPE END
 
